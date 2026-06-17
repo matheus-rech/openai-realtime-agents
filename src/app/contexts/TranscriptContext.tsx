@@ -1,16 +1,27 @@
 "use client";
 
-import React, { createContext, useContext, useState, FC, PropsWithChildren } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  FC,
+  PropsWithChildren,
+} from "react";
 import { v4 as uuidv4 } from "uuid";
 import { TranscriptItem } from "@/app/types";
 
 type TranscriptContextValue = {
   transcriptItems: TranscriptItem[];
-  addTranscriptMessage: (itemId: string, role: "user" | "assistant", text: string, hidden?: boolean) => void;
+  addTranscriptMessage: (
+    itemId: string,
+    role: "user" | "assistant",
+    text: string,
+    isHidden?: boolean,
+  ) => void;
   updateTranscriptMessage: (itemId: string, text: string, isDelta: boolean) => void;
   addTranscriptBreadcrumb: (title: string, data?: Record<string, any>) => void;
   toggleTranscriptItemExpand: (itemId: string) => void;
-  updateTranscriptItemStatus: (itemId: string, newStatus: "IN_PROGRESS" | "DONE") => void;
+  updateTranscriptItem: (itemId: string, updatedProperties: Partial<TranscriptItem>) => void;
 };
 
 const TranscriptContext = createContext<TranscriptContextValue | undefined>(undefined);
@@ -19,12 +30,15 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
   const [transcriptItems, setTranscriptItems] = useState<TranscriptItem[]>([]);
 
   function newTimestampPretty(): string {
-    return new Date().toLocaleTimeString([], {
-      hour12: true,
-      hour: "numeric",
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {
+      hour12: false,
+      hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
     });
+    const ms = now.getMilliseconds().toString().padStart(3, "0");
+    return `${time}.${ms}`;
   }
 
   const addTranscriptMessage: TranscriptContextValue["addTranscriptMessage"] = (itemId, role, text = "", isHidden = false) => {
@@ -89,10 +103,10 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
     );
   };
 
-  const updateTranscriptItemStatus: TranscriptContextValue["updateTranscriptItemStatus"] = (itemId, newStatus) => {
+  const updateTranscriptItem: TranscriptContextValue["updateTranscriptItem"] = (itemId, updatedProperties) => {
     setTranscriptItems((prev) =>
       prev.map((item) =>
-        item.itemId === itemId ? { ...item, status: newStatus } : item
+        item.itemId === itemId ? { ...item, ...updatedProperties } : item
       )
     );
   };
@@ -105,7 +119,7 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
         updateTranscriptMessage,
         addTranscriptBreadcrumb,
         toggleTranscriptItemExpand,
-        updateTranscriptItemStatus,
+        updateTranscriptItem,
       }}
     >
       {children}

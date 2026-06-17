@@ -28,8 +28,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Ignore all env files except .env.sample
+.env
+
 
 # vercel
 .vercel
@@ -38,3 +39,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 todo.md
+
